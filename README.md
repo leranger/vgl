@@ -1,7 +1,10 @@
+
 # VGL
 
 A small, header-only, GPU-accelerated vector graphics renderer for OpenGL.
 
+![alt text](https://github.com/regularshmo/vgl/blob/main/preview/tiger.png?raw=true)
+![alt text](https://github.com/regularshmo/vgl/blob/main/preview/text.png?raw=true)
 
 # IMPLEMENTATION
 
