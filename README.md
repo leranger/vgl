@@ -9,6 +9,8 @@ A small, header-only, GPU-accelerated vector graphics renderer for OpenGL.
 
 # IMPLEMENTATION
 
+Inspired by https://hhoppe.com/ravg.pdf
+
 VGL works by cutting paths into tiles and evaluating trapezoidal coverage on the GPU.
 
 Edges use 8bit fixed-point coordinates (x0,y0,x1,y1), totaling 32bits per edge and are uploaded to a texture.
