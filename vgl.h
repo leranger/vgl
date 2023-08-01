@@ -669,19 +669,19 @@ void vg_rectr(float x, float y, float w, float h, float rx, float ry)
 void vg_char(float x, float y, float size, int c)
 {
 	if (!vg.state.font) return;
-	vg_font_draw_char((vgFont*)vg.state.font, x, y, size, c);
+	vg_font_draw_char(vg.state.font, x, y, size, c);
 }
 
 void vg_text(float x, float y, float size, const char *str)
 {
 	if (!vg.state.font) return;
-	vg_font_draw_text((vgFont*)vg.state.font, x, y, size, str);
+	vg_font_draw_text(vg.state.font, x, y, size, str);
 }
 
 float vg_textw(float size, const char *str)
 {
 	if (!vg.state.font) return 0;
-	return vg_font_measure_text((vgFont*)vg.state.font, size, str);
+	return vg_font_measure_text(vg.state.font, size, str);
 }
 
 void vg_textf(float x, float y, float size, const char *format, ...)

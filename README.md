@@ -41,6 +41,7 @@ Before filling, the sign buffer is scanned from left to right, accumilating sign
 
 # TODO
 - Line Caps & Joins
+- Unicode
 - TTF Compound Glyph Support
 - TTF Alignment / Kerning
 - SVG Image Parser
