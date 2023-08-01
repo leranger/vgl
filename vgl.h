@@ -894,12 +894,9 @@ static vgRect vg_rect_union(vgRect a, vgRect b)
 //////////////////////////*/
 
 // VGL works by cutting paths into tiles and evaluating trapezoidal coverage on the GPU.
-// 
-// Edges use 8bit fixed - point coordinates(x0, y0, x1, y1), totaling 32bits per edge and are uploaded to a texture.
-// 
-// Tiles are rendered with quads using GPU instancing, each tile contains an edge - list pointer, fill - info pointer along with the sign(inside / outside) state of it's bottom-left corner.
-// 
-// A sign buffer is used to track when paths cross the top / bottom of tiles.
+// Edges use 8bit fixed-point coordinates(x0, y0, x1, y1), totaling 32bits per edge and are uploaded to a texture.
+// Tiles are rendered with quads using GPU instancing, each tile contains an edge-list pointer, fill-info pointer along with the sign (inside / outside) state of it's bottom-left corner.
+// A sign buffer is used to track when paths cross the top/bottom of tiles.
 // Before filling, the sign buffer is scanned from left to right, accumilating sign per tile.
 
 #define VG_GRID_SIZE   (1024)
@@ -1077,8 +1074,6 @@ static void vg_push_fill(vgFill *fill, int ntiles, int nedges, unsigned** pdata,
 {
 	int ifill, isize;
 	unsigned *data;
-
-	int size = sizeof(vgFill);
 
 	ifill = sizeof(vgFill) / 4;
 	isize = ifill + nedges * sizeof(vgEdge) / 4;
