@@ -238,20 +238,18 @@ void vg_eval(vgCommand *commands);
 #define VG_PATH_LINETO  (2)
 #define VG_PATH_CURVETO (3)
 
-typedef struct vgPath    vgPath;
+typedef union  vgPath    vgPath;
 typedef struct vgState   vgState;
 typedef struct vgContext vgContext;
 
-struct vgPath {
-	union {
-		struct { 
-			int closed   : 1;
-			int winding  : 1;
-			int reserved : 30;
-			int end;
-		};
-		vgPoint point;
+union vgPath {
+	struct { 
+		int closed   : 1;
+		int winding  : 1;
+		int reserved : 30;
+		int end;
 	};
+	vgPoint point;
 };
 
 struct vgState {
