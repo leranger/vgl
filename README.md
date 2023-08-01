@@ -7,6 +7,25 @@ A small, header-only, GPU-accelerated vector graphics renderer for OpenGL.
 ![alt text](https://github.com/regularshmo/vgl/blob/main/preview/tiger.png?raw=true)
 ![alt text](https://github.com/regularshmo/vgl/blob/main/preview/text.png?raw=true)
 
+# USAGE
+
+```c
+#define VGL_IMPLEMENTATION
+#include <vgl.h>
+```
+
+```c
+vg_init();
+// ...
+vg_begin();
+vg_clear(0xFF000000);
+vg_moveto(100, 100);
+vg_lineto(200, 100);
+vg_lineto(200, 200);
+vg_fill(0xFF0000FF);
+vg_end();
+```
+
 # IMPLEMENTATION
 
 Inspired by https://hhoppe.com/ravg.pdf
