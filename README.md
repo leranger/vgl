@@ -22,7 +22,7 @@ vg_begin();
 vg_clear(0xFF000000);
 vg_moveto(100, 100);
 vg_lineto(200, 100);
-vg_lineto(200, 200);
+vg_curveto(200, 200, 100, 200);
 vg_fill(0xFF0000FF);
 vg_end();
 ```
