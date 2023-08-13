@@ -66,8 +66,9 @@ VGL_API void  vg_rect       (float x, float y, float w, float h);
 VGL_API void  vg_rectr      (float x, float y, float w, float h, float rx, float ry);
 VGL_API void  vg_char       (float x, float y, float size, int c);
 VGL_API void  vg_text       (float x, float y, float size, const char *str);
+VGL_API void  vg_textn      (float x, float y, float size, const char *str, const char *end);
 VGL_API void  vg_textf      (float x, float y, float size, const char *format, ...);
-VGL_API float vg_textw      (float size, const char *str);
+VGL_API float vg_textw      (float size, const char *str, const char *end);
 VGL_API void  vg_close      ();
 						   
 VGL_API void  vg_fill       (unsigned color);
@@ -181,22 +182,22 @@ VGL_API vgFont* vg_font_load         (const char *filename);
 VGL_API vgFont* vg_font_loadp        (void *data, int size);
 VGL_API vgFont* vg_font_default      ();
 VGL_API void    vg_font_draw_char    (vgFont *font, float x, float y, float size, int c);
-VGL_API void    vg_font_draw_text    (vgFont *font, float x, float y, float size, const char *str);
-VGL_API float   vg_font_measure_text (vgFont *font, float size, const char *str);
+VGL_API void    vg_font_draw_text    (vgFont *font, float x, float y, float size, const char *str, const char *end);
+VGL_API float   vg_font_measure_text (vgFont *font, float size, const char *str, const char *end);
 
 /*//////////////////////////
 // COMMANDS
 //////////////////////////*/
 
 enum {
-	VG_CMD_END,
-	VG_CMD_MOVETO,
-	VG_CMD_LINETO,
-	VG_CMD_CURVETO,
-	VG_CMD_CUBICTO,
-	VG_CMD_ALPHA,
-	VG_CMD_FILL,
-	VG_CMD_STROKE,
+	VG_CMD_END     = 0,
+	VG_CMD_MOVETO  = 1,
+	VG_CMD_LINETO  = 2,
+	VG_CMD_CURVETO = 3,
+	VG_CMD_CUBICTO = 4,
+	VG_CMD_ALPHA   = 5,
+	VG_CMD_FILL    = 6,
+	VG_CMD_STROKE  = 7,
 	// TODO: extend
 };
 
@@ -224,19 +225,13 @@ void vg_eval(vgCommand *commands);
 #include <stdio.h>
 #include <math.h>
 #include <assert.h>
-#include <string.h>
 
-#define VG_MAX_PATH     (2048*2048)
-#define VG_MAX_STATE    (256)
+#define VG_MAX_PATH    (2048*2048)
+#define VG_MAX_STATE   (256)
 
-#define VG_TESS_DIST    (4.0f)
-#define VG_TESS_DIST2   (VG_TESS_DIST*VG_TESS_DIST)
-#define VG_TESS_FACTOR  (1.0f / VG_TESS_DIST)
-
-#define VG_PATH_NONE    (0)
-#define VG_PATH_MOVETO  (1)
-#define VG_PATH_LINETO  (2)
-#define VG_PATH_CURVETO (3)
+#define VG_TESS_DIST   (4.0f)
+#define VG_TESS_DIST2  (VG_TESS_DIST*VG_TESS_DIST)
+#define VG_TESS_FACTOR (1.0f / VG_TESS_DIST)
 
 typedef union  vgPath    vgPath;
 typedef struct vgState   vgState;
@@ -340,9 +335,10 @@ void vg_size(int *w, int *h)
 
 void vg_path()
 {
-	vg_path_reset  = 1;
-	vg_path_index  = 0;
-	vg_path_count  = 0;
+	if (!vg_path_reset) return;
+	vg_path_reset = 0;
+	vg_path_index = 0;
+	vg_path_count = 0;
 }
 
 void vg_end()
@@ -365,11 +361,7 @@ static void vg_push_point(float x, float y)
 {
 	assert(vg_path_count < VG_MAX_PATH - 1);
 	vgPoint point = { x, y };
-	if (vg_path_reset) {
-		vg_path_reset = 0;
-		vg_path_index = 0;
-		vg_path_count = 0;
-	}
+	vg_path();
 	if (vg_path_index == vg_path_count) {
 		vgPath *path = &vg_path_buffer[vg_path_count++];
 		path->winding = vg.state.winding >= 0;
@@ -675,13 +667,13 @@ void vg_char(float x, float y, float size, int c)
 void vg_text(float x, float y, float size, const char *str)
 {
 	if (!vg.state.font) return;
-	vg_font_draw_text(vg.state.font, x, y, size, str);
+	vg_font_draw_text(vg.state.font, x, y, size, str, 0);
 }
 
-float vg_textw(float size, const char *str)
+void vg_textn(float x, float y, float size, const char *str, const char *end)
 {
-	if (!vg.state.font) return 0;
-	return vg_font_measure_text(vg.state.font, size, str);
+	if (!vg.state.font) return;
+	vg_font_draw_text(vg.state.font, x, y, size, str, end);
 }
 
 void vg_textf(float x, float y, float size, const char *format, ...)
@@ -695,8 +687,14 @@ void vg_textf(float x, float y, float size, const char *format, ...)
 	va_start(args, format);
 	vsnprintf(pbuff, length + 1, format, args);
 	va_end(args);
-	vg_text(x, y, size, pbuff);
+	vg_font_draw_text(vg.state.font, x, y, size, pbuff, pbuff + length);
 	if (mbuff) free(mbuff);
+}
+
+float vg_textw(float size, const char *str, const char *end)
+{
+	if (!vg.state.font) return 0;
+	return vg_font_measure_text(vg.state.font, size, str, end);
 }
 
 void vg_reset()
@@ -1276,7 +1274,7 @@ static void vg_fill_lineto_base(float x, float y)
 	if (dx >= (64 << VG_TILE_LOG2) ||
 		dy >= (64 << VG_TILE_LOG2)) {
 		vg_fill_lineto_base(
-			(vg_fill_point.x + x) * 0.5f, 
+			(vg_fill_point.x + x) * 0.5f,
 			(vg_fill_point.y + y) * 0.5f);
 		vg_fill_lineto_base(x, y);
 		return;
@@ -1313,36 +1311,34 @@ static void vg_fill_lineto_base(float x, float y)
 		iy0 = iy1;
 
 		if (ni == -1) {
-			tx1  = x1;
-			ty1  = y1;
+			tx1 = x1;
+			ty1 = y1;
 		} else
-		if (er > 0) {
-			tx1 = ((ix0 + (sx > 0)) << VG_TILE_LOG2);
-			ty1 = y0 + (ty >> VG_EDGE_LOG2);
+			if (er > 0) {
+				tx1 = ((ix0 + (sx > 0)) << VG_TILE_LOG2);
+				ty1 = y0 + (ty >> VG_EDGE_LOG2);
 
-			er  += ex;
-			ty  += ly;
-            ix1 += sx;
+				er += ex;
+				ty += ly;
+				ix1 += sx;
 
-			if (sx > 0) {
-				vg_push_edge(ix1, iy1, tx1 - 32, (iy1 << VG_TILE_LOG2), tx1 - 32, ty1);
+				if (sx > 0)
+					vg_push_edge(ix1, iy1, tx1 - 32, (iy1 << VG_TILE_LOG2), tx1 - 32, ty1);
+				else
+					vg_push_edge(ix0, iy0, tx1 - 32, ty1, tx1 - 32, (iy0 << VG_TILE_LOG2));
 			} else {
-				vg_push_edge(ix0, iy0, tx1 - 32, ty1, tx1 - 32, (iy0 << VG_TILE_LOG2));
-			}
-        } else {
-			tx1 = x0 + (tx >> VG_EDGE_LOG2);
-			ty1 = ((iy0 + (sy > 0)) << VG_TILE_LOG2);
+				tx1 = x0 + (tx >> VG_EDGE_LOG2);
+				ty1 = ((iy0 + (sy > 0)) << VG_TILE_LOG2);
 
-			er  += ey;
-			tx  += lx;
-            iy1 += sy;
+				er += ey;
+				tx += lx;
+				iy1 += sy;
 
-			if (sy > 0) {
-				vg_push_sign(ix0, iy0, +1);
-			} else {
-				vg_push_sign(ix1, iy1, -1);
+				if (sy > 0)
+					vg_push_sign(ix0, iy0, +1);
+				else
+					vg_push_sign(ix1, iy1, -1);
 			}
-		}
 
 		vg_push_edge(ix0, iy0, tx0, ty0, tx1, ty1);
 	}
@@ -2333,11 +2329,56 @@ void vg_matrix_zoom(float *m, float x, float y, float zoom)
 }
 
 /*//////////////////////////
+// UNICODE
+//////////////////////////*/
+
+// Copyright (c) 2008-2010 Bjoern Hoehrmann <bjoern@hoehrmann.de>
+// See http://bjoern.hoehrmann.de/utf-8/decoder/dfa/ for details.
+
+#define VG_UTF8_ACCEPT 0
+#define VG_UTF8_REJECT 12
+
+static unsigned vg_decode_utf8(unsigned* state, unsigned* codep, unsigned byte)
+{
+	static const unsigned char utf8d[] = {
+		// The first part of the table maps bytes to character classes that
+		// to reduce the size of the transition table and create bitmasks.
+		0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+		0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+		0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+		0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,  0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+		1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,  9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,9,
+		7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,  7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,7,
+		8,8,2,2,2,2,2,2,2,2,2,2,2,2,2,2,  2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,
+		10,3,3,3,3,3,3,3,3,3,3,3,3,4,3,3, 11,6,6,6,5,8,8,8,8,8,8,8,8,8,8,8,
+
+		// The second part is a transition table that maps a combination
+		// of a state of the automaton and a character class to a state.
+		0,12,24,36,60,96,84,12,12,12,48,72, 12,12,12,12,12,12,12,12,12,12,12,12,
+		12, 0,12,12,12,12,12, 0,12, 0,12,12, 12,24,12,12,12,12,12,24,12,24,12,12,
+		12,12,12,12,12,12,12,24,12,12,12,12, 12,24,12,12,12,12,12,12,12,24,12,12,
+		12,12,12,12,12,12,12,36,12,36,12,12, 12,36,12,12,12,12,12,36,12,36,12,12,
+		12,36,12,12,12,12,12,12,12,12,12,12,
+    };
+
+	unsigned type = utf8d[byte];
+    *codep = (*state != VG_UTF8_ACCEPT) ?
+		(byte & 0x3fu) | (*codep << 6) :
+		(0xff >> type) & (byte);
+
+	*state = utf8d[256 + *state + type];
+	return *state;
+}
+
+/*//////////////////////////
 // TTF FONT
 //////////////////////////*/
 
+// thanks to stb_truetype.h for the reference implementation
+
 typedef struct vgttEntry vgttEntry;
 typedef struct vgttGlyph vgttGlyph;
+typedef struct vgttIter  vgttIter;
 
 struct vgttEntry {
 	unsigned tag;
@@ -2347,7 +2388,7 @@ struct vgttEntry {
 };
 
 struct vgttGlyph {
-	int key;
+	int code;
 	int index;
 	int offset;
 	int ncont;
@@ -2380,6 +2421,23 @@ struct vgFont {
 	vgttEntry kern;
 	vgttEntry cff;
 	vgttGlyph *glyphs[256];
+};
+
+struct vgttIter {
+	vgFont *font;
+	float size;
+	float base_x;
+	float base_y;
+	float curr_x;
+	float curr_y;
+	float next_x;
+	float next_y;
+	unsigned prev_code;
+	unsigned curr_code;
+	vgttGlyph *prev_glyph;
+	vgttGlyph *curr_glyph;
+	const char *str;
+	const char *end;
 };
 
 #ifdef VG_BIG_ENDIAN
@@ -2483,7 +2541,7 @@ vgFont* vg_font_default()
 	return 0;
 }
 
-static int vg_font_glyph_index(vgFont *ttf, unsigned c)
+static int vg_font_glyph_index(vgFont *ttf, int c)
 {
 	int version, ntables, platformid, encodingid;
 	int oec, osc, odt, oro, ogi, ro, sc, ec, dt;
@@ -2550,7 +2608,7 @@ static int vg_font_glyph_index(vgFont *ttf, unsigned c)
 	return index;
 }
 
-static int vg_font_glyph_offset(vgFont *ttf, unsigned index)
+static int vg_font_glyph_offset(vgFont *ttf, int index)
 {
 	int offset, wide;
 	wide = TTF_U16(ttf, ttf->head.offset, 50);
@@ -2560,29 +2618,30 @@ static int vg_font_glyph_offset(vgFont *ttf, unsigned index)
 	return ttf->glyf.offset + offset;
 }
 
-static vgttGlyph* vg_font_glyph(vgFont *ttf, unsigned c)
+static vgttGlyph* vg_font_glyph(vgFont *ttf, int c)
 {
+	int hash, index, offset;
 	vgttGlyph *glyph;
-	int hash;
 
 	hash = c & 0xFF;
 	glyph = ttf->glyphs[hash];
 	while (glyph) {
-		if (glyph->key == c)
+		if (glyph->code == c)
 			return glyph;
 		glyph = glyph->next;
 	}
 
+	index = vg_font_glyph_index(ttf, c);
+	if (index == 0) return 0;
+
+	offset = vg_font_glyph_offset(ttf, index);
+	if (offset == 0) return 0;
+
 	// TODO: batch alloc
 	glyph = calloc(1, sizeof(vgttGlyph));
-	glyph->key = c;
-
-	glyph->index = vg_font_glyph_index(ttf, c);
-	if (glyph->index == 0) goto done;
-
-	glyph->offset = vg_font_glyph_offset(ttf, glyph->index);
-	if (glyph->offset == 0) goto done;
-
+	glyph->code = c;
+	glyph->index = index;
+	glyph->offset = offset;
 	glyph->ncont = TTF_I16(ttf, glyph->offset, 0);
 	glyph->xmin  = TTF_I16(ttf, glyph->offset, 2);
 	glyph->ymin  = TTF_I16(ttf, glyph->offset, 4);
@@ -2604,7 +2663,7 @@ done:
 	return glyph;
 }
 
-static int vg_font_glyph_coverage(vgFont *ttf, int ocoverage, unsigned glyph)
+static int vg_font_glyph_coverage(vgFont *ttf, int ocoverage, int glyph)
 {
 	int format = TTF_U16(ttf, ocoverage, 0);
 	switch (format) {
@@ -2876,102 +2935,92 @@ static void vg_font_draw_glyph(vgFont *ttf, float x, float y, float size, int og
 	else           vg_font_draw_glyph_contour(ttf, x, y, size, oglyph);
 }
 
+static void vg_font_begin(vgttIter *iter, vgFont *ttf, float x, float y, float size, const char *str, const char *end)
+{
+	iter->font = ttf;
+	iter->size = size;
+	iter->base_x = iter->curr_x = iter->next_x = x;
+	iter->base_y = iter->curr_y = iter->next_y = y;
+	iter->prev_glyph = iter->curr_glyph = 0;
+	iter->prev_code = iter->curr_code = 0;
+	iter->str = str;
+	iter->end = end;
+}
+
+static int vg_font_next(vgttIter *iter)
+{
+	const char *str = iter->str;
+	const char *end = iter->end;
+	unsigned state = 0;
+	unsigned code = 0;
+	vgttGlyph *glyph;
+
+	if (end ? str == end : !str[0])
+		return 0;
+
+	for (; end ? str != end : str[0]; str++) {
+		if (vg_decode_utf8(&state, &code, *(const unsigned char*)str))
+			continue;
+
+		if (code == '\n') {
+			iter->curr_x = iter->next_x = iter->base_x;
+			iter->curr_y = iter->next_y;
+			iter->next_y += iter->size * 0.65f; // TODO: valign
+			iter->prev_code = 0;
+			iter->prev_glyph = 0;
+			continue;
+		}
+
+		// TODO: font fallbacks
+		glyph = vg_font_glyph(iter->font, code);
+		
+		if (glyph && iter->prev_glyph)
+			iter->next_x += vg_font_glyph_kern(iter->font, iter->prev_glyph->index, glyph->index);
+
+		iter->curr_x = iter->next_x;
+		iter->curr_y = iter->next_y;
+		iter->prev_code = iter->curr_code;
+		iter->prev_glyph = iter->curr_glyph;
+		iter->curr_code = code;
+		iter->curr_glyph = glyph;
+
+		if (glyph)
+			iter->next_x += glyph->width * iter->size;
+
+		str++;
+		break;
+	}
+
+	iter->str = str;
+	return 1;
+}
+
 void vg_font_draw_char(vgFont *ttf, float x, float y, float size, int c)
 {
 	vgttGlyph *glyph;
-
+	vg_path();
 	glyph = vg_font_glyph(ttf, c);
 	if (glyph == 0) return;
-
 	vg_font_draw_glyph(ttf, x, y, size, glyph->offset);
 }
 
-float vg_font_measure_text(vgFont *ttf, float size, const char *str)
+float vg_font_measure_text(vgFont *ttf, float size, const char *str, const char *end)
 {
-	vgttGlyph *glyph, *prev;
-	float x, w; 
-	int i;
-
-	x = w = 0;
-	prev = 0;
-	
-	for (i = 0; str[i]; i++) {
-		if (w < x) w = x;
-
-		if (str[i] == '\n') {
-			x = 0;
-			continue;
-		}
-
-		glyph = vg_font_glyph(ttf, str[i]);
-		if (glyph == 0) {
-			prev = 0;
-			continue;
-		}
-
-		if (str[i] == ' ') {
-			x += glyph->width * size;
-			prev = glyph;
-			continue;
-		}
-
-		if (prev) {
-			x += vg_font_glyph_kern(ttf, prev->index, glyph->index);
-		}
-
-		prev = glyph;
-		x += glyph->width * size;
-	}
-
-	if (w < x) w = x;
+	vgttIter iter; float w = 0;
+	vg_font_begin(&iter, ttf, 0, 0, size, str, end);
+	while (vg_font_next(&iter))
+		w = fmaxf(w, iter.next_x);
 	return w;
 }
 
-void vg_font_draw_text(vgFont *ttf, float x, float y, float size, const char *str)
+void vg_font_draw_text(vgFont *ttf, float x, float y, float size, const char *str, const char *end)
 {
-	// TODO: vertical alignment / advance
-	// TODO: font fallbacks
-	// TODO: unicode
-
-	vgttGlyph *glyph, *prev;
-	float px, py;
-	int i;
-
+	vgttIter iter;
 	vg_path();
-
-	px = x;
-	py = y;
-	prev = 0;
-
-	for (i = 0; str[i]; i++) {
-		if (str[i] == '\n') {
-			px = x;
-			py += size * 0.65f;
-			prev = 0;
-			continue;
-		}
-
-		glyph = vg_font_glyph(ttf, str[i]);
-		if (glyph == 0) {
-			prev = 0;
-			continue;
-		}
-
-		if (str[i] == ' ') {
-			px += glyph->width * size;
-			prev = glyph;
-			continue;
-		}
-
-		if (prev) {
-			px += vg_font_glyph_kern(ttf, prev->index, glyph->index);
-		}
-
-		vg_font_draw_glyph(ttf, px, py, size, glyph->offset);
-
-		prev = glyph;
-		px += glyph->width * size;
-	}
+	vg_font_begin(&iter, ttf, x, y, size, str, end);
+	while (vg_font_next(&iter))
+		if (iter.curr_glyph && iter.curr_code != ' ')
+			vg_font_draw_glyph(ttf, iter.curr_x, iter.curr_y, size, iter.curr_glyph->offset);
 }
 
 /*//////////////////////////

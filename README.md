@@ -1,13 +1,14 @@
-
-
 # VGL
 
-A small, header-only, GPU-accelerated vector graphics renderer for OpenGL.
+A small, header-only, dependency free, GPU-accelerated vector graphics renderer for OpenGL 3.3+
+- 256x coverage based anti-aliasing
+- Fast! (batched drawing using a single draw call)
+- Fill modes (non-zero, even-odd, intersection)
+- Gradients (linear, box, radial) 
+- Stroked paths
+- TTF fonts
 
-![alt text](https://github.com/regularshmo/vgl/blob/main/preview/tiger.png?raw=true)
-![alt text](https://github.com/regularshmo/vgl/blob/main/preview/text.png?raw=true)
-
-# USAGE
+## USAGE
 
 ```c
 #define VGL_IMPLEMENTATION
@@ -26,7 +27,12 @@ vg_fill(0xFF0000FF);
 vg_end();
 ```
 
-# IMPLEMENTATION
+## RENDERS
+
+![alt text](https://github.com/regularshmo/vgl/blob/main/preview/tiger.png?raw=true)
+![alt text](https://github.com/regularshmo/vgl/blob/main/preview/text.png?raw=true)
+
+## IMPLEMENTATION
 
 Inspired by https://hhoppe.com/ravg.pdf
 
@@ -39,9 +45,8 @@ Tiles are rendered with quads using GPU instancing, each tile contains an edge-l
 A sign buffer is used to track when paths cross the top/bottom of tiles. 
 Before filling, the sign buffer is scanned from left to right, accumilating sign per tile.
 
-# TODO
+## TODO
 - Line Caps & Joins
-- Unicode
 - TTF Compound Glyph Support
 - TTF Alignment / Kerning
 - SVG Image Parser
