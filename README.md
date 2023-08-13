@@ -16,14 +16,14 @@ A small, header-only, dependency free, GPU-accelerated vector graphics renderer 
 ```
 
 ```c
-vg_init();
-// ...
 vg_begin();
 vg_clear(0xFF000000);
 vg_moveto(100, 100);
 vg_lineto(200, 100);
 vg_curveto(200, 200, 100, 200);
+vg_lineto(100, 100);
 vg_fill(0xFF0000FF);
+vg_stroke(0xFFFFFFFF, 1);
 vg_end();
 ```
 
