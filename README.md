@@ -46,9 +46,10 @@ A sign buffer is used to track when paths cross the top/bottom of tiles.
 Before filling, the sign buffer is scanned from left to right, accumilating sign per tile.
 
 ## TODO
+- OpenGL 3.0 Support (no instancing)
 - Line Caps & Joins
 - TTF Compound Glyph Support
-- TTF Alignment / Kerning
+- TTF Kerning
 - SVG Image Parser
 - Texture Fill
 - Texture Caching
