@@ -79,7 +79,6 @@ VGL_API void  vg_fillgr     (unsigned c0, unsigned c1, float x, float y, float w
 VGL_API void  vg_fillbh     (float x, float y, float w, float h, float sat, float val);
 VGL_API void  vg_fillbs     (float x, float y, float w, float h, float hue);
 VGL_API void  vg_stroke     (unsigned color, float width);
-VGL_API void  vg_strokeg    (unsigned c0, unsigned c1, unsigned c2, float width);
 
 VGL_API void  vg_push       ();
 VGL_API void  vg_reset      ();
@@ -223,8 +222,9 @@ void vg_eval(vgCommand *commands);
 #include <stdlib.h>
 #include <stdarg.h>
 #include <stdio.h>
-#include <math.h>
 #include <assert.h>
+#include <string.h>
+#include <math.h>
 
 #define VG_MAX_PATH    (2048*2048)
 #define VG_MAX_STATE   (256)
@@ -283,8 +283,8 @@ vgState   vg_state_buffer[VG_MAX_STATE];
 int       vg_state_count;
 void     *vg_default_font;
 
-void vg_fill_prime();
-void vg_fill_flush();
+static void vg_fill_prime();
+static void vg_fill_flush();
 
 void vg_driver_init();
 void vg_driver_prime();
@@ -998,6 +998,7 @@ int         vg_fill_winding;
 
 static void vg_push_fill(vgFill *fill, int ntiles, int nedges, unsigned** pdata, unsigned** pedges);
 static void vg_push_tile(int x, int y, int sign, void* data, void* edges, int count);
+static void vg_fill_lineto(float x, float y);
 
 static void vg_fill_prime()
 {
@@ -1170,7 +1171,7 @@ static void vg_push_sign(int ix, int iy, int sign)
 static void vg_push_sign_span(int iy0, int iy1)
 {
 	int dy, sv, sw;
-	char *sp, *se;
+	signed char *sp, *se;
 
 	iy0 = iy0 < 0 ? 0 : iy0 >= vg_grid_sizey ? vg_grid_sizey - 1 : iy0;
 	iy1 = iy1 < 0 ? 0 : iy1 >= vg_grid_sizey ? vg_grid_sizey - 1 : iy1;
@@ -1206,7 +1207,6 @@ static int vg_fill_closed()
 
 static void vg_fill_close()
 {
-	static void vg_fill_lineto(float x, float y);
 	if (!vg_fill_reset && !vg_fill_closed())
 		vg_fill_lineto(vg_fill_start.x - VG_TILE_DIMS, vg_fill_start.y);
 	vg_fill_reset = 1;
@@ -1591,12 +1591,8 @@ void vg_stroke(unsigned color, float width)
 // DRIVER
 //////////////////////////*/
 
-#ifndef VGL_INIT
-#define VGL_INIT()
-#endif
-
 #ifndef VGL_LOG
-#define VGL_LOG(msg)
+#define VGL_LOG(msg) printf("%s\n", msg)
 #endif
 
 #define VGL_SHADER_(...) #__VA_ARGS__
@@ -1608,13 +1604,18 @@ void vg_stroke(unsigned color, float width)
 
 #if VGL_DRIVER == VGL_OPENGL
 
-#ifndef VGL_TRACE
-#define VGL_TRACE()
-#endif
-
-#define VGL_VERSION "#version 330\n"
 #undef min
 #undef max
+
+#define VGL_VERSION "#version 440\n"
+
+#define VGL_TRACE() do {\
+	GLenum err;\
+	while ((err = glGetError()) != GL_NO_ERROR) {\
+		GLchar errmsg[64];\
+		sprintf(errmsg, "opengl: error: %i %s [%i]", err, __FILE__, __LINE__);\
+		VGL_LOG(errmsg);\
+	}} while(0)
 
 const GLchar* vgl_shader_lib = 
 VGL_VERSION 
@@ -2029,8 +2030,6 @@ void vg_driver_init()
 	const GLchar *source[2];
 	GLuint shader;
 	GLint result;
-
-	VGL_INIT();
 
 	glGenTextures(1, &vgl_buffer_data);
 	glBindTexture(GL_TEXTURE_2D, vgl_buffer_data);
