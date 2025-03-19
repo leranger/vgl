@@ -49,7 +49,7 @@ VGL_API void  vg_begin      ();
 VGL_API void  vg_flush      ();
 VGL_API void  vg_clear      (unsigned color);
 VGL_API void  vg_end        ();
-			  
+
 VGL_API void  vg_path       ();
 VGL_API void  vg_moveto     (float x, float y);
 VGL_API void  vg_lineto     (float x, float y);
@@ -70,7 +70,7 @@ VGL_API void  vg_textn      (float x, float y, float size, const char *str, cons
 VGL_API void  vg_textf      (float x, float y, float size, const char *format, ...);
 VGL_API float vg_textw      (float size, const char *str, const char *end);
 VGL_API void  vg_close      ();
-						   
+
 VGL_API void  vg_fill       (unsigned color);
 VGL_API void  vg_fillr      (unsigned c0, unsigned c1, float x, float y, float r0, float r1);
 VGL_API void  vg_fillb      (unsigned c0, unsigned c1, float x, float y, float w, float h, float r0, float r1);
@@ -99,7 +99,7 @@ VGL_API void  vg_projectn   (float *x, float *y);
 VGL_API void  vg_unprojectn (float *x, float *y);
 VGL_API void  vg_clip       (float x, float y, float w, float h);
 VGL_API void  vg_noclip     ();
-VGL_API void  vg_pop(); 
+VGL_API void  vg_pop();
 
 VGL_API void  vg_size       (int *w, int *h);
 
@@ -238,7 +238,7 @@ typedef struct vgState   vgState;
 typedef struct vgContext vgContext;
 
 union vgPath {
-	struct { 
+	struct {
 		int closed   : 1;
 		int winding  : 1;
 		int reserved : 30;
@@ -292,7 +292,7 @@ void vg_driver_size(int *w, int *h);
 void vg_driver_clear(unsigned color);
 void vg_driver_flush();
 
-void vg_init() 
+void vg_init()
 {
 	if (vg_initialized) return;
 	vg_initialized = 1;
@@ -394,7 +394,7 @@ void vg_lineto(float x, float y)
 }
 
 static void vg_curvetor(
-	float x1, float y1, 
+	float x1, float y1,
 	float x2, float y2,
 	float x3, float y3,
 	int level)
@@ -448,7 +448,7 @@ void vg_curveto(float ax, float ay, float px, float py)
 
 	sx = vg_path_point.x;
 	sy = vg_path_point.y;
-	 
+
 	if ((sx < 0 && ax < 0 && px < 0) ||
 		(sx > vg.size.x && ax > vg.size.x && px > vg.size.x) ||
 		(sy < 0 && ax < 0 && px < 0) ||
@@ -514,7 +514,7 @@ static void vg_cubictor(
 void vg_cubicto(float ax, float ay, float bx, float by, float px, float py)
 {
 	float sx, sy;
-	
+
 	if (vg_path_reset) {
 		vg_moveto(px, py);
 		return;
@@ -523,7 +523,7 @@ void vg_cubicto(float ax, float ay, float bx, float by, float px, float py)
 	vg_project(&ax, &ay);
 	vg_project(&bx, &by);
 	vg_project(&px, &py);
-	
+
 	sx = vg_path_point.x;
 	sy = vg_path_point.y;
 
@@ -733,7 +733,7 @@ void vg_spaa(float spaa)
 
 void vg_alpha(float alpha)
 {
-	if (alpha < 0) alpha = 0; 
+	if (alpha < 0) alpha = 0;
 	else if (alpha > 1) alpha = 1;
 	vg.state.alpha *= alpha;
 }
@@ -857,7 +857,7 @@ static vgRect vg_rect_add(vgRect a, int x, int y)
 	return r;
 }
 
-static vgRect vg_rect_inflate(vgRect a, int rx, int ry) 
+static vgRect vg_rect_inflate(vgRect a, int rx, int ry)
 {
 	vgRect r;
 	r.minx = a.minx - rx;
@@ -974,23 +974,23 @@ typedef union vgEdge {
 
 unsigned    vg_data_buffer[VG_MAX_DATA];
 int         vg_data_count;
-		    
+
 vgTile      vg_tile_buffer[VG_MAX_TILES];
 int         vg_tile_count;
 
 vgEdge      vg_edge_buffer[VG_MAX_EDGES];
 int         vg_edge_links[VG_MAX_EDGES];
 int         vg_edge_count;
-		 
+
 signed char vg_tile_sign[VG_GRID_SIZE * VG_GRID_SIZE];
 int         vg_tile_edge[VG_GRID_SIZE * VG_GRID_SIZE];
-		 
+
 float       vg_grid_scalex;
 float       vg_grid_scaley;
 int         vg_grid_sizex;
 int         vg_grid_sizey;
 vgRect      vg_grid_bounds;
-		    
+
 int         vg_fill_reset;
 vgPoint     vg_fill_start;
 vgPoint     vg_fill_point;
@@ -1142,7 +1142,7 @@ static void vg_push_edge(int ix, int iy, int ax, int ay, int bx, int by)
 		edge.y0 = ay - (iy << VG_TILE_LOG2) + VG_EDGE_BORDER;
 		edge.x1 = bx - (ix << VG_TILE_LOG2) + VG_EDGE_BORDER;
 		edge.y1 = by - (iy << VG_TILE_LOG2) + VG_EDGE_BORDER;
-	} else {								
+	} else {
 		edge.x0 = bx - (ix << VG_TILE_LOG2) + VG_EDGE_BORDER;
 		edge.y0 = by - (iy << VG_TILE_LOG2) + VG_EDGE_BORDER;
 		edge.x1 = ax - (ix << VG_TILE_LOG2) + VG_EDGE_BORDER;
@@ -1159,10 +1159,10 @@ static void vg_push_edge(int ix, int iy, int ax, int ay, int bx, int by)
 static void vg_push_sign(int ix, int iy, int sign)
 {
 	if (iy >= vg_grid_sizey || iy < 0 ||
-		ix >= vg_grid_sizex) 
+		ix >= vg_grid_sizex)
 		return;
-	
-	if (ix < 0) 
+
+	if (ix < 0)
 		ix = 0;
 
 	vg_tile_sign[ix + iy * vg_grid_sizex] -= sign * vg_fill_winding;
@@ -1395,7 +1395,7 @@ static void vg_fill_draw(vgFill *fill)
 				if (sign != 0 || count > 0) {
 					vg_push_tile(
 						rect.minx + x - 1,
-						rect.miny + y, 
+						rect.miny + y,
 						sign, data, edgep, count);
 				}
 			}
@@ -1439,7 +1439,7 @@ void vg_fill(unsigned color)
 void vg_fillr(unsigned c0, unsigned c1, float x, float y, float r0, float r1)
 {
 	vgMatrix matrix;
-	vgFill fill; 
+	vgFill fill;
 	matrix = vg.state.matrix;
 	vg_matrix_translate(matrix.v, x, y);
 	vg_fill_set(&fill, vg.state.mode, VG_FILL_RAD, c0, c1, 0, 0, r0, r1, &matrix);
@@ -1592,7 +1592,7 @@ void vg_stroke(unsigned color, float width)
 //////////////////////////*/
 
 #ifndef VGL_LOG
-#define VGL_LOG(msg) printf("%s\n", msg)
+#define VGL_LOG(msg) printf("%s: %d: %s\n", __FILE__, __LINE__, msg)
 #endif
 
 #define VGL_SHADER_(...) #__VA_ARGS__
@@ -1607,7 +1607,7 @@ void vg_stroke(unsigned color, float width)
 #undef min
 #undef max
 
-#define VGL_VERSION "#version 440\n"
+#define VGL_VERSION "#version 330\n"
 
 #define VGL_TRACE() do {\
 	GLenum err;\
@@ -1617,8 +1617,8 @@ void vg_stroke(unsigned color, float width)
 		VGL_LOG(errmsg);\
 	}} while(0)
 
-const GLchar* vgl_shader_lib = 
-VGL_VERSION 
+const GLchar* vgl_shader_lib =
+VGL_VERSION
 VGL_SHADER(
 	precision highp float;
 	precision highp int;
@@ -1716,14 +1716,23 @@ VGL_SHADER(
 	out vec2 vclip;
 	out vec2 vgrad;
 
-	const vec2 QUAD[6] = {
-		{ 0.0f, 0.0f },
-		{ 1.0f, 0.0f },
-		{ 1.0f, 1.0f },
-		{ 0.0f, 0.0f },
-		{ 1.0f, 1.0f },
-		{ 0.0f, 1.0f },
-	};
+// 	const vec2 QUAD[6] = {
+// 		{ 0.0f, 0.0f },
+// 		{ 1.0f, 0.0f },
+// 		{ 1.0f, 1.0f },
+// 		{ 0.0f, 0.0f },
+// 		{ 1.0f, 1.0f },
+// 		{ 0.0f, 1.0f },
+// 	};
+
+	const float QUAD[12] = float[12] (
+		0.0f, 0.0f,
+		1.0f, 0.0f,
+		1.0f, 1.0f,
+		0.0f, 0.0f,
+		1.0f, 1.0f,
+		0.0f, 1.0f
+	);
 
 	void main() {
 		int data; uvec4 args;
@@ -1739,7 +1748,7 @@ VGL_SHADER(
 		vcount  = du16(uvec2(iargs.ba*255));
 		vindex  = int(iedges);
 		vcoord  = ivec2(du16(uvec2(icoord.rg*255)), du16(uvec2(icoord.ba*255)));
-		vpixel  = QUAD[gl_VertexID] * VG_TILE_DIMS;
+		vpixel  = vec2(QUAD[gl_VertexID], QUAD[gl_VertexID+1]) * VG_TILE_DIMS;
 		vscreen = vec2(vcoord * VG_TILE_DIMS + vpixel);
 
 		mat2x3 mclip;
@@ -2044,7 +2053,7 @@ void vg_driver_init()
 	vgl_shader = glCreateProgram();
 
 	shader = glCreateShader(GL_VERTEX_SHADER);
-	source[0] = vgl_shader_lib; 
+	source[0] = vgl_shader_lib;
 	source[1] = vgl_shader_vs;
 	glShaderSource(shader, 2, source, 0);
 	glCompileShader(shader);
@@ -2054,6 +2063,7 @@ void vg_driver_init()
 		glGetShaderInfoLog(shader, sizeof(log), 0, log);
 		VGL_LOG(log);
 	}
+	VGL_TRACE();
 
 	shader = glCreateShader(GL_FRAGMENT_SHADER);
 	source[0] = vgl_shader_lib;
@@ -2066,6 +2076,7 @@ void vg_driver_init()
 		glGetShaderInfoLog(shader, sizeof(log), 0, log);
 		VGL_LOG(log);
 	}
+	VGL_TRACE();
 
 	glLinkProgram(vgl_shader);
 	glGetProgramiv(vgl_shader, GL_LINK_STATUS, &result);
@@ -2073,9 +2084,10 @@ void vg_driver_init()
 		glGetProgramInfoLog(vgl_shader, sizeof(log), 0, log);
 		VGL_LOG(log);
 	}
+	VGL_TRACE();
 
 	vgl_shader_uscreensize = glGetUniformLocation(vgl_shader, "uscreensize");
-	vgl_shader_udatasize   = glGetUniformLocation(vgl_shader, "udatasize");	
+	vgl_shader_udatasize   = glGetUniformLocation(vgl_shader, "udatasize");
 	vgl_shader_iargs       = glGetAttribLocation(vgl_shader, "iargs");
 	vgl_shader_idata       = glGetAttribLocation(vgl_shader, "idata");
 	vgl_shader_iedges      = glGetAttribLocation(vgl_shader, "iedges");
@@ -2136,14 +2148,16 @@ void vg_driver_prime()
 	VGL_TRACE();
 
 	glUseProgram(vgl_shader);
+	VGL_TRACE();
 	glUniform2i(vgl_shader_uscreensize, vg.size.x, vg.size.y);
+	VGL_TRACE();
 	glUniform2i(vgl_shader_udatasize, vgl_buffer_size, vgl_buffer_size);
 	VGL_TRACE();
 }
 
 void vg_driver_flush()
 {
-	if (vg_tile_count == 0) 
+	if (vg_tile_count == 0)
 		return;
 
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8UI, vgl_buffer_size, (vg_data_count + vgl_buffer_size - 1) / vgl_buffer_size, 0, GL_RGBA_INTEGER, GL_UNSIGNED_BYTE, vg_data_buffer);
@@ -2199,7 +2213,7 @@ void vg_driver_size(int *w, int *h)
 // MATRIX
 //////////////////////////*/
 
-void vg_matrix_identity(float *m) 
+void vg_matrix_identity(float *m)
 {
 	*(vgMatrix*)m = (vgMatrix) { 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f };
 }
@@ -2240,13 +2254,13 @@ void vg_matrix_multiply(float *m, float *a)
 	float yx = m[3];
 	float yy = m[4];
 	float yt = m[5];
-	
+
 	m[0] = xx * a[0] + xy * a[1];
 	m[1] = xx * a[3] + xy * a[4];
-	
+
 	m[3] = yx * a[0] + yy * a[1];
-	m[4] = yx * a[3] + yy * a[4];	
-	
+	m[4] = yx * a[3] + yy * a[4];
+
 	m[2] = xt + a[2];
 	m[5] = yt + a[5];
 }
@@ -2508,7 +2522,7 @@ vgFont* vg_font_load(const char *filename)
 {
 	int size; void *data;
 	vgFont *font;
-	FILE *file; 
+	FILE *file;
 
 	file = fopen(filename, "r");
 	if (!file) return 0;
@@ -2535,7 +2549,7 @@ vgFont* vg_font_loadp(void *data, int size)
 }
 
 vgFont* vg_font_default()
-{	
+{
 	// TODO: embed small default font?
 	return 0;
 }
@@ -2597,7 +2611,7 @@ static int vg_font_glyph_index(vgFont *ttf, int c)
 				break;
 			}
 		}
-	} else 
+	} else
 	if (format == 0) {
 		if (c > 255) return 0;
 		lang = TTF_U8(ttf, base, 4);
@@ -2693,7 +2707,7 @@ static int vg_font_glyph_coverage(vgFont *ttf, int ocoverage, int glyph)
 			else    return TTF_U16(ttf, orecord, 4) + glyph - strawa;
 		}
 		break; }
-	default: 
+	default:
 		return -1;
 	}
 	return -1;
@@ -2748,7 +2762,7 @@ static float vg_font_glyph_kern_info(vgFont *ttf, int g1, int g2)
 	if (!ttf->kern.tag) return 0;
 	if (TTF_U16(ttf, ttf->kern.offset, 2) < 1) return 0;
 	if (TTF_U16(ttf, ttf->kern.offset, 8) != 1) return 0;
-	
+
 	l = 0;
 	r = TTF_U16(ttf, ttf->kern.offset, 10) - 1;
 	needle = g1 << 16 | g2;
@@ -2794,18 +2808,18 @@ static void vg_font_draw_glyph_contour(vgFont *ttf, float x, float y, float size
 	// find coord offsets
 	for (i = 0; i < npnts; iw++) {
 		flag = TTF_U8(ttf, oflag, iw);
-			
+
 		if (flag & 0x08 /* REPEAT */) {
 			iw++;
 			r = TTF_U8(ttf, oflag, iw) + 1;
 		} else {
 			r = 1;
 		}
-			
+
 		while (r--) {
 			if (flag & 0x02 /* X_SHORT_VECTOR */) {
 				ix += 1;
-			} else 
+			} else
 			if (!(flag & 0x10 /* X_IS_SAME */)) {
 				ix += 2;
 			}
@@ -2845,7 +2859,7 @@ static void vg_font_draw_glyph_contour(vgFont *ttf, float x, float y, float size
 					if (!(flag & 0x10 /* X_IS_POSITIVE */))
 							dx = -dx;
 					ix += 1;
-				} else 
+				} else
 				if (flag & 0x10 /* X_IS_SAME */) {
 					dx = 0;
 				} else {
@@ -2858,7 +2872,7 @@ static void vg_font_draw_glyph_contour(vgFont *ttf, float x, float y, float size
 					if (!(flag & 0x20 /* Y_IS_POSITIVE */))
 						dy = -dy;
 					iy += 1;
-				} else 
+				} else
 				if (flag & 0x20 /* Y_IS_SAME */) {
 					dy = 0;
 				} else {
@@ -2915,16 +2929,35 @@ static void vg_font_draw_glyph_compound(vgFont *ttf, float x, float y, float siz
 	if (ncont >= 0) return;
 
 	ocomp = oglyph + 10;
-	flags = TTF_U16(ttf, ocomp, 0);
-	next  = TTF_U16(ttf, ocomp, 2);
-	more  = 1;
+// 	flags = TTF_U16(ttf, ocomp, 0);
+// 	next  = TTF_U16(ttf, ocomp, 2);
+// 	more  = 1;
 
-	while (more) {
-		// TODO: transform
-		vg_font_draw_glyph(ttf, x, y, size, vg_font_glyph_offset(ttf, next));
-		// TODO: more
-		more = 0;
-	}
+// 	while (more) {
+// 		// TODO: transform
+// 		vg_font_draw_glyph(ttf, x, y, size, vg_font_glyph_offset(ttf, next));
+// 		// TODO: more
+// 		more = 0;
+// 	}
+	do {
+		flags = TTF_U16(ttf, ocomp, 0);
+		next  = TTF_U16(ttf, ocomp, 2);
+// 		if (more)
+			vg_font_draw_glyph(ttf, x, y, size, vg_font_glyph_offset(ttf, next));
+// 		ocomp = next+10;
+		ocomp += 4;
+		if (flags & 0x0001)
+			ocomp += 4;
+		else
+			ocomp += 2;
+	  if (flags & 0x0008)
+	  	ocomp += 2;
+	  else if (flags & 0x0040)
+	  	ocomp += 4;
+	  else if (flags & 0x0080)
+	 	 ocomp += 8;
+		more++;
+	} while (flags & 0x0020);
 }
 
 static void vg_font_draw_glyph(vgFont *ttf, float x, float y, float size, int oglyph) {
@@ -2972,7 +3005,7 @@ static int vg_font_next(vgttIter *iter)
 
 		// TODO: font fallbacks
 		glyph = vg_font_glyph(iter->font, code);
-		
+
 		if (glyph && iter->prev_glyph)
 			iter->next_x += vg_font_glyph_kern(iter->font, iter->prev_glyph->index, glyph->index);
 
@@ -3096,10 +3129,10 @@ void vg_eval(vgCommand *cmd) {
 			cmd = (vgCommand*)((char*)cmd + sizeof(cmd->alpha));
 			break;
 		case VG_CMD_FILL:
-			vg_fill(cmd->fill.color); 
+			vg_fill(cmd->fill.color);
 			cmd = (vgCommand*)((char*)cmd + sizeof(cmd->fill));
 			break;
-		case VG_CMD_STROKE: 
+		case VG_CMD_STROKE:
 			vg_stroke(cmd->stroke.color, cmd->stroke.width);
 			cmd = (vgCommand*)((char*)cmd + sizeof(cmd->stroke));
 			break;
